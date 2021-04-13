@@ -4,39 +4,111 @@ This file holds "in progress" release notes for the current release under develo
 
 This section serves to track things we should later document here for 17.0
 
-- Chef Infra Client now ships with Ruby 3
-- Compliance Phase in GA: https://github.com/chef/chef/pull/10547
-- remove support for RHEL 6 i386
-- Compliance cli report - https://github.com/chef/chef/pull/10939
-- Remove ability to run client as a service on Windows - https://github.com/chef/chef/pull/10928
-- Knife Org commands from knife-opc are now part of chef itself - https://github.com/chef/chef/pull/10187
-- Chef packages on *nix now create the /etc/chef directory and subdirectories to make getting started easier - https://github.com/chef/chef/pull/11158 / https://github.com/chef/chef/pull/11173
-- lpar_no and wpar_no in AIX Virtualization plugin are now Integers - https://github.com/chef/ohai/pull/1647
+### Compliance Phase
+
+Chef Infra Client's new Compliance Phase allows users to automatically execute compliance audits and view the results in Chef Automate as part of any Chef Infra Client Run. This new phase of the Chef Infra Client run replaces the legacy audit cookbook and works using the existing attributes. With this new phase you'll always have the latest compliance capabilities out of the box without the need to manage cookbook dependencies.
+
+The Compliance Phase also features a new compliance reporter: `cli`. This report mimics the InSpec command line output giving you a visual indication of your system's compliance status. Thanks for this new reporter [@aknarts](https://github.com/aknarts/).
+
+Existing audit cookbook users can migrate to the new Compliance Phase by removing the audit cookbook from their run_list and setting the `node['audit']['compliance_phase'] = true` attribute.
+
+For more information see our on-demand webinar [Configure Chef Infra & Compliance Using Built-In Functionality](https://pages.chef.io/202102-Webinar-ConfigureChefInfraComplianceUsingBuilt-InFunctionality_01Register.html)
+
+### Ruby 3
+
+Chef Infra Client 17 packages now ship with embedded Ruby 3.0. This new release of Ruby improves performance and offers many new language improvements for those writing advanced custom resources. See the [ruby-lang.org Ruby 3.0 Announcement](https://www.ruby-lang.org/en/news/2020/12/25/ruby-3-0-0-released/) for additional details on what's new and improved in Ruby 3.0.
+
+#### Knife Moved to Workstation
+
+TODO: What does this mean to users
+
+### Breaking Changes
+
+#### AIX Virtualization Improvements
+
+The Ohai :Virtualization plugin on AIX systems will now properly return the `lpar_no` and `wpar_no` values as Integers instead of Strings. This makes the data much easier to work with in cookbooks, but may be a breaking change depending on how AIX users consumed these values.
+
+#### 32bit RHEL/CentOS 6 Support
+
+Chef Infra Client 17 packages will no longer be produced for 32bit RHEL/CentOS 6 systems. RHEL/CentOS 6 became EOL November 2020. We are extending support for 64 bit RHEL/CentOS 6 until Chef Infra Client 18 (April 2022) or when upstream platform or library changes prohibit us from building on these EOL systems.
+
+#### Chef Client As A Service on Windows
+
+Based on customer feedback and observations in the field we've removed the ability to run the Chef Infra Client as a service on Windows nodes. We've seen the service manager for the Chef Infra Client consume excessive memory, hang preventing runs, or prevent nodes from updating to new client releases properly. We've always seen significant better reliability by running Chef Infra Client as a scheduled task on Windows and in July of 2006 we introduced warnings to the [chef-client cookbook](https://supermarket.chef.io/cookbooks/chef-client) when running as a service. The ability to setup the client as a service was later removed from the cookbook entirely in October of 2017.
+
+For customers current running Chef Infra Client as a service we suggest migrating to scheduled task based execution. This allows for complex scheduling scenarios not possible with simple services such, as the ability to skip Chef Infra Client execution if a system is on battery or to run the Chef Infra Client as soon as a system boots to ensure configuration.
+
+Chef Infra Client can be configured to run as a scheduled task using the [chef-client cookbook](https://supermarket.chef.io/cookbooks/chef-client) or ideally using the [chef_client_scheduled_task resource](https://docs.chef.io/resources/chef_client_scheduled_task/) built into Chef Infra Client 16 or later. For users already running as a service setting up the scheduled task and then stopping the existing service can be performed within a Chef Infra Client run to migrate systems.
+
+#### Gem Resource Ruby 1.9+
+
+The `gem` resource used to install Ruby Gems into the system's Ruby installation will now assume Ruby 1.9 or later.
+
+#### Legacy node['filesystem2'] removed on AIX/Solaris/FreeBSD
+
+TODO: https://github.com/chef/ohai/pull/1592
+
+#### Removed Antergos and Pidora Detection
+
+Ohai detection of the EOL Antergos and Pidora distributions has been removed.
 
 ### Infra Language Improvements
 
-- New effortless? helper - https://github.com/chef/chef/pull/11150
-- Default values in custom resources are now dup'd - https://github.com/chef/chef/pull/11095
-- Lazy attribute loading: https://github.com/chef/chef/pull/10861
-- reboot_pending? now works on all debian platform_family distros not just Ubuntu specifically - https://github.com/chef/chef/pull/10989
+#### Lazy Attribute Loading
+
+TODO: Lazy attribute loading: https://github.com/chef/chef/pull/10861
+
+#### Custom Resource Property Defaults
+
+TODO: Default values in custom resources are now dup'd - https://github.com/chef/chef/pull/11095
+
+#### effortless? helper
+
+A new `effortless?` helper identifies if a system is running Chef Infra Client using the Effortless Pattern.
+
+#### reboot_pending? Improvements
+
+The `reboot_pending?` helper now works on all Debian based platforms instead of just Ubuntu.
 
 ### Resource Improvements
 
-- apt_package allow_downgrades now functions as expected, but also raises on invalid versions - https://github.com/chef/chef/pull/10993
-- Use shell redirection in chef_client_cron when append_log_file is true - https://github.com/chef/chef/pull/11124
-- Improve idempotency debug logging in resources - https://github.com/chef/chef/pull/11149
-- Resolve potential failures in chef_client_launchd and macosx_service - https://github.com/chef/chef/pull/11154
-- Improved performance in systemd_unit resource - https://github.com/chef/chef/pull/10925
-- gem resource: assume rubygems 1.8+ now: https://github.com/chef/chef/pull/10379
-- execute: Add login property - https://github.com/chef/chef/pull/11201
+#### Logging Improvements
+
+TODO: Improve idempotency debug logging in resources - https://github.com/chef/chef/pull/11149
+
+#### apt_package
+
+TODO: apt_package allow_downgrades now functions as expected, but also raises on invalid versions - https://github.com/chef/chef/pull/10993
+
+#### chef_client_launchd / macosx_service
+
+TODO: Resolve potential failures in chef_client_launchd and macosx_service - https://github.com/chef/chef/pull/11154
+
+#### systemd_unit
+
+TODO: Improved performance in systemd_unit resource - https://github.com/chef/chef/pull/10925
+
+#### execute
+
+TODO: execute: Add login property - https://github.com/chef/chef/pull/11201
 
 ### Ohai
 
+#### Podman Detection
+
 - New Ohai habitat plugin at `node['habitat']` - https://github.com/chef/ohai/pull/1623
+
+#### Habitat Support
+
 - Detect guests running in Podman - https://github.com/chef/ohai/pull/1617
-- don't write out node['filesystem2'] data on AIX/Solaris/FreeBSD: https://github.com/chef/ohai/pull/1592
+
+#### Alibaba Detection
+
 - Alibaba Cloud support with node['alibaba'] showing metadata, `alibaba?` helper and node['cloud'] returning data now - https://github.com/chef/chef/pull/11004
-- Removed detection of discontinued antergos and Pidora distros - https://github.com/chef/ohai/pull/1633 / https://github.com/chef/ohai/pull/1634
+
+### Knife
+
+- Knife Org commands from knife-opc are now part of chef itself - https://github.com/chef/chef/pull/10187
 
 ## What's New in 16.13
 
