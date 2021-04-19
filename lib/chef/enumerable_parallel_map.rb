@@ -54,8 +54,8 @@ class Chef
         max_queue: 0,
         # synchronous redefines the 0 in max_queue to mean 'no queue'
         synchronous: true,
-        # this prevents deadlocks on recusive parallel usage
-        fallback_policy: :caller_runs,
+        # this prevents deadlocks on recursive parallel usage
+        fallback_policy: :caller_runs
       )
     end
   end
